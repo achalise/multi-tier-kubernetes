@@ -1,0 +1,8 @@
+<h1>
+  {{title}}
+  <div *ngIf="users | async as u; else loading">
+    <div *ngFor="let user of  users | async">
+      {{user.firstName}} {{user.lastName}}
+    </div>
+  </div>
+</h1>
