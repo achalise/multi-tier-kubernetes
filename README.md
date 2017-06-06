@@ -215,6 +215,12 @@ or from literal
 
 ```
 
+The to create backend specifying the environment variable names,
+`kubectl create -f backend-with-configmap-specify-names.yaml`
+
+Or to create backend importing everything in the configmap as env variables,
+
+`kubectl create -f backend-with-everything-in-configmap.yaml`
 
 ### Conclusion
 
