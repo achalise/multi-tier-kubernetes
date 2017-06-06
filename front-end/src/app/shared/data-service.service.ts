@@ -9,6 +9,11 @@ import {User} from "./model/user";
 export class DataServiceService {
   constructor(private http:Http) { }
 
+  retrieveMessage(): Observable<string> {
+    let url = `http://${location.host}/api/message`;
+    return this.http.get(url).map((res) => res.json());
+  }
+
   retrieveUsers(): Observable<Array<User>> {
     let url = `http://${location.host}/api/users`;
     console.log('The url: ', url);

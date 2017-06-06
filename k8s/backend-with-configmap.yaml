@@ -1,0 +1,44 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: demo
+        tier: backend
+        track: stable
+    spec:
+      containers:
+        - name: backend
+          image: "achalise/demo-backend"
+          ports:
+          - containerPort: 8080
+          env:
+             #mongodb host
+             - name: MONGO_URI
+               valueFrom:
+                 configMapKeyRef:
+                     name: backend-config
+                     key: mongo.host
+             #customer message
+             - name: customer_message
+               valueFrom:
+                 configMapKeyRef:
+                     name: backend-config
+                     key: customer.message
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+  selector:
+    app: demo
+    tier: backend

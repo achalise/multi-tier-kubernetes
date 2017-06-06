@@ -1,5 +1,9 @@
 package com.example;
 
+import com.example.model.User;
+import com.example.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -15,37 +19,31 @@ import java.util.List;
 @RestController
 public class DemoController {
 
+    @Autowired
+    private UserRepository userRepository;
+
+    @Value("${customer.message}")
+    private String message;
+
     @RequestMapping(value = "/api/users", method = RequestMethod.GET)
     @ResponseBody
     public List<User> getUsers() {
-        return Arrays.asList(new User("Joe", "Bloggs"), new User("Joe", "Doe"));
-    }
-}
-
-class User {
-    private String firstName;
-    private String lastName;
-
-    public User(){}
-
-    public User(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+        List<User> users = Arrays.asList(new User("Joe", "Bloggs", "joe@blogs.com"),
+                new User("Joe", "Doe", "jdoe@email.com"));
+        users.stream().forEach((user)->insertUserIfNoExist(user));
+        return userRepository.findAll();
     }
 
-    public String getFirstName() {
-        return firstName;
+    @RequestMapping(value = "/api/message", method = RequestMethod.GET)
+    @ResponseBody
+    public String getMessage() {
+        return "\"" + message + "\"";
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    private void insertUserIfNoExist(User user) {
+        User u = userRepository.findByEmail(user.getEmail());
+        if (u == null) {
+            userRepository.save(user);
+        }
     }
 }

@@ -9,9 +9,10 @@ import {Observable} from "rxjs";
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
-  title = 'app works!';
+  title: Observable<string>;
   users: Observable<Array<User>> = null;
   constructor(private dataService: DataServiceService) {
     this.users = this.dataService.retrieveUsers();
+    this.title = this.dataService.retrieveMessage();
   }
 }

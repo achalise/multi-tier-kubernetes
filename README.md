@@ -31,6 +31,17 @@ within the container which is mounted on host at `/data/storage/mongodb`.
 The mongodb `pod` above is exposed as a service within our kubernetes cluster as a service with name `mongo-service` as
 described in `mongo.yaml`.
 
+#### Interacting with Mongo from within the POD
+
+``` 
+arun:k8s achalise$ kubectl get pods
+arun:k8s achalise$ kubectl get pod mongo-controller-5b3dl
+NAME                     READY     STATUS    RESTARTS   AGE
+mongo-controller-5b3dl   1/1       Running   0          5m
+arun:k8s achalise$ kubectl exec -it mongo-controller-5b3dl -- /bin/bash
+```
+
+
 ### SpringBoot Service
 
 ### Angular FrontEnd
@@ -56,7 +67,6 @@ described in `mongo.yaml`.
         Setting up kubeconfig...
         Kubectl is now configured to use the cluster.
         arun:k8s achalise$ 
-
    ```
 
 * Deploy and start up the `mongo` service using the descriptor file `mongo.yaml`
@@ -148,6 +158,64 @@ described in `mongo.yaml`.
   
   ```
     
+### Using ConfigMap
+
+We hardcoded value for the `MONGO_URI` env variable to `mongo-service` in our deployment yaml for backend.
+
+```
+    spec:
+      containers:
+        - name: backend
+          image: "achalise/demo-backend"
+          ports:
+          - containerPort: 8080
+          env:
+            - name: MONGO_URI
+              value: mongo-service
+```
+Also there is `customer.message` defined in `application.properties` which we would like to populate via configmap
+to fully externalise conig from code.
+
+We want to change it so that the value to the environment variable is fed from config map so that configuration
+is completely separate from the image.
+
+Create a backend config map yaml `backend-config.yaml` with the relevant config data:
+```
+    apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: backend-config
+      namespace: default
+    data:
+      MONGO_URI: mongo-service
+      customer_message: message overridden from configmap
+```
+Then execute `kubectl create -f backend-config/backend-config.yaml`
+
+or from literal
+
+`kubectl create configmap backend-config --from-literal=mongo.host=mongo-service --from-literal=customer.message='original message modified'`
+
+``` 
+    arun:k8s achalise$ kubectl create configmap backend-config --from-file=backend-config
+    configmap "backend-config" created
+    arun:k8s achalise$ kubectl describe configmap backend-config
+    Name:		backend-config
+    Namespace:	default
+    Labels:		<none>
+    Annotations:	<none>
+    
+    Data
+    ====
+    backend-config.properties:
+    ----
+    MONGO_URI=mongo-service
+    customer.message="Message overwritten from configmap"
+    arun:k8s achalise$ 
+
+```
+
+
 ### Conclusion
 
 ### Useful Docker and Kubernetes commands 
@@ -161,6 +229,27 @@ Now generate a new project with angular cli by executing
 
 Create a `Dockerfile` using `nginx` image to deploy our angular app.
 
+`docker build -t achalise/demo-frontend`
+`docker push achalise/demo-backend`
 
 To remove all stopped containers
 `docker rm $(docker ps -a -q)`
+
+### Running locally
+
+* MongoDB - exec `mongod --dbpath /data/db`, where `/data/db` is your local drive for mongodb to write to. 
+     `chmod` write permission on it.
+* Backend - `./gradlew bootRun`   
+
+* Front End - `ng serve --proxy-conf proxy.conf.json`  
+
+### Running locally using Docker
+
+* MongoDB - `docker run -p 27017:27017 mongo`
+* Backeend - prepare docker image `./gradlew buildDocker -x test`
+           - and run using `docker run  -p 8080:8080 achalise/demo-backend`
+           
+* FrontEnd - run `ng build` to produce dist artefact and  `docker build -t achalise/demo-frontend ` 
+in the folder `front-end` where we have our `Dockerfile`. Then `docker run achalise/demo-frontend -p 4300:80`  
+
+But need Docker compose to make a bridge to make them talk to one another.         

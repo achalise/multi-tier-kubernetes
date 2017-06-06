@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: default
+data:
+  MONGO_URI: mongo-service
+  customer_message: message overridden from configmap
