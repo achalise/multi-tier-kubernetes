@@ -258,4 +258,32 @@ To remove all stopped containers
 * FrontEnd - run `ng build` to produce dist artefact and  `docker build -t achalise/demo-frontend ` 
 in the folder `front-end` where we have our `Dockerfile`. Then `docker run achalise/demo-frontend -p 4300:80`  
 
-But need Docker compose to make a bridge to make them talk to one another.         
+But need Docker compose to make a bridge to make them talk to one another.     
+    
+    
+## Running Kubernetes in AWS
+
+Easiest way is to do it using stackpoint.io
+
+Initial set up:
+- Sign up with AWS, and have a free tier ubuntu instance set up
+- Locall install aws client for CLI
+- Locally install KOPS
+
+- Create Route53 domain for the cluster with name `dev.demo.com`
+  `aws route53 create-hosted-zone --name dev.demo.com --caller-reference 1`
+  And verify with `dig NS dev.demo.com`
+  
+- Create S3 bucket to store the cluster state
+  `aws s3 mb s3://clusters.dev.demo.com`
+- Export `export KOPS_STATE_STORE=s3://clusters.dev.demo.com`, store it as env variable in `.bash-profile`.  
+
+- Build the cluster
+  `kops create cluster --zones=us-east-2a useast2.dev.demo.com`
+  
+
+## Fabric8
+  Start with `gofabric8 start --vm-driver=virtualbox`
+  To set up `gofabric8` in existing project, `mvn io.fabric8:fabric8-maven-plugin:3.2.28:setup`
+  `eval $(minikube docker-env)` to run against the minikube docker daemon
+  
