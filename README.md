@@ -222,8 +222,6 @@ Or to create backend importing everything in the configmap as env variables,
 
 `kubectl create -f backend-with-everything-in-configmap.yaml`
 
-### Conclusion
-
 ### Useful Docker and Kubernetes commands 
 
 
