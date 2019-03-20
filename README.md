@@ -280,8 +280,5 @@ Initial set up:
   `kops create cluster --zones=us-east-2a useast2.dev.demo.com`
   
 
-## Fabric8
-  Start with `gofabric8 start --vm-driver=virtualbox`
-  To set up `gofabric8` in existing project, `mvn io.fabric8:fabric8-maven-plugin:3.2.28:setup`
-  `eval $(minikube docker-env)` to run against the minikube docker daemon
+
   
